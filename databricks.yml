@@ -43,16 +43,16 @@ targets:
     mode: development
     default: true
     variables:
-      catalog_name: demo_nnguyen
-      lakebase_instance_name: smartstock
+      catalog_name: smart_stock
+      lakebase_instance_name: smart-stock-db
       dim_product_pipeline_id: 8dd276d7-ddaf-48c1-905f-cd06ee3513e0
       dim_warehouse_pipeline_id: 0835f41e-4248-474c-802c-a8b892643d61
       fact_transactions_pipeline_id: 41a42b76-489f-486e-8aa7-755d80a41f1d
       inventory_historical_pipeline_id: bc27caff-b9bf-4af7-85d4-c7bbe178fa70
       inventory_forecast_pipeline_id: e69fb378-312a-4ec1-9765-03c6222c222d
     workspace:
-      host: https://fe-vm-nam-nguyen-workspace-classic.cloud.databricks.com/
-      profile: fe-vm-nam
+      host: https://fevm-huntington-ingalls-industries.cloud.databricks.com/
+      profile: dev
 
   prod:
     mode: production
