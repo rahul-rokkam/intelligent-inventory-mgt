@@ -770,7 +770,7 @@ const SmartStockDashboard: React.FC = () => {
               <Factory className="w-8 h-8 text-blue-600" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">SmartStock</h1>
-                <p className="text-sm text-gray-600">VulcanTech Manufacturing · Lyon, France</p>
+                <p className="text-sm text-gray-600">Huntington Ingalls Industries (HII) · Newport News, VA</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">

@@ -106,14 +106,14 @@ def generate_daily_summary() -> str:
         total_value = 48350
         urgent_reorders = 3
         pending_orders = 5
-        warehouse_info = " The Hamburg warehouse had the highest activity."
+        warehouse_info = " The Newport News Shipyard had the highest activity."
 
     today = datetime.now()
-    summary = f"""Good morning Elena! 👋 Today is {today.strftime('%A, %B %d, %Y')}.
-    Yesterday, we processed {transaction_count} transactions with a total value of €{total_value:,.0f}.{warehouse_info}
+    summary = f"""Good morning! 👋 Today is {today.strftime('%A, %B %d, %Y')}.
+    Yesterday, we processed {transaction_count} transactions with a total value of ${total_value:,.0f}.{warehouse_info}
     {urgent_reorders} urgent reorders need your attention today.
     You have {pending_orders} pending orders to review.
-    Today's focus: Optimize inventory levels and review critical stock alerts."""
+    Today's focus: Optimize inventory levels and review critical stock alerts for frigate construction."""
 
     return summary
 
@@ -175,13 +175,13 @@ def get_trending_products() -> List[TrendingProduct]:
     except Exception as e:
         pass  # Fall through to default data
 
-    # Default data if query fails
+    # Default data if query fails - Shipbuilding materials
     return [
-        TrendingProduct(sku='EMOTOR-001', name='E-Bike Motor 750W', trend=32, sales=245),
-        TrendingProduct(sku='BATT-LI-500', name='Lithium Battery 500Wh', trend=28, sales=189),
-        TrendingProduct(sku='CTRL-SMART-01', name='Smart Controller', trend=24, sales=156),
-        TrendingProduct(sku='DISP-LED-05', name='LED Display Panel', trend=-12, sales=98),
-        TrendingProduct(sku='SENS-TORQ-02', name='Torque Sensor', trend=18, sales=134)
+        TrendingProduct(sku='HII-HUL-00001', name='Steel Plate HY-80 1in', trend=32, sales=245),
+        TrendingProduct(sku='HII-PIP-00001', name='Seawater Pipe 6in CuNi', trend=28, sales=189),
+        TrendingProduct(sku='HII-ELE-00001', name='Power Cable 4/0 AWG', trend=24, sales=156),
+        TrendingProduct(sku='HII-FST-00001', name='Hex Bolt SS 1/2-13x2', trend=-12, sales=98),
+        TrendingProduct(sku='HII-MEC-00001', name='Seawater Pump 500GPM', trend=18, sales=134)
     ]
 
 def get_supplier_metrics() -> List[SupplierMetrics]:
@@ -190,7 +190,7 @@ def get_supplier_metrics() -> List[SupplierMetrics]:
     try:
         with db.get_connection() as conn:
             with conn.cursor() as cursor:
-                # Query for supplier metrics
+                # Query for supplier metrics - HII shipbuilding suppliers
                 cursor.execute("""
                     SELECT
                         supplier,
@@ -199,12 +199,12 @@ def get_supplier_metrics() -> List[SupplierMetrics]:
                     FROM (
                         SELECT
                             CASE
-                                WHEN location = 'Lyon' THEN
-                                    CASE WHEN RANDOM() < 0.5 THEN 'Alpine' ELSE 'TechnoVelo' END
-                                WHEN location = 'Hamburg' THEN
-                                    CASE WHEN RANDOM() < 0.5 THEN 'Hamburg BP' ELSE 'Nord Elec' END
+                                WHEN location = 'Newport News' THEN
+                                    CASE WHEN RANDOM() < 0.5 THEN 'US Steel' ELSE 'Flowserve' END
+                                WHEN location = 'Pascagoula' THEN
+                                    CASE WHEN RANDOM() < 0.5 THEN 'Rolls-Royce' ELSE 'Parker Hannifin' END
                                 ELSE
-                                    CASE WHEN RANDOM() < 0.5 THEN 'Milano Cyc' ELSE 'Italian Tech' END
+                                    CASE WHEN RANDOM() < 0.5 THEN 'BAE Systems' ELSE 'L3Harris' END
                             END as supplier,
                             transaction_timestamp as order_date,
                             transaction_timestamp + INTERVAL '3 days' + (RANDOM() * INTERVAL '2 days') as delivery_date,
@@ -231,14 +231,14 @@ def get_supplier_metrics() -> List[SupplierMetrics]:
     except Exception as e:
         pass  # Fall through to default data
 
-    # Default supplier metrics
+    # Default supplier metrics - HII shipbuilding suppliers
     return [
-        SupplierMetrics(supplier='Alpine', avgDays=3.2, onTime=95),
-        SupplierMetrics(supplier='TechnoVelo', avgDays=4.1, onTime=88),
-        SupplierMetrics(supplier='Hamburg BP', avgDays=2.8, onTime=97),
-        SupplierMetrics(supplier='Nord Elec', avgDays=3.5, onTime=92),
-        SupplierMetrics(supplier='Milano Cyc', avgDays=4.5, onTime=85),
-        SupplierMetrics(supplier='Italian Tech', avgDays=3.8, onTime=90)
+        SupplierMetrics(supplier='US Steel', avgDays=3.2, onTime=95),
+        SupplierMetrics(supplier='Flowserve', avgDays=4.1, onTime=88),
+        SupplierMetrics(supplier='Rolls-Royce', avgDays=2.8, onTime=97),
+        SupplierMetrics(supplier='Parker Hannifin', avgDays=3.5, onTime=92),
+        SupplierMetrics(supplier='BAE Systems', avgDays=4.5, onTime=85),
+        SupplierMetrics(supplier='L3Harris', avgDays=3.8, onTime=90)
     ]
 
 def get_critical_inventory_counts() -> Dict[str, int]:
@@ -300,37 +300,37 @@ def get_warehouse_details() -> List[WarehouseDetail]:
 
     warehouses = []
 
-    # Define warehouse base data
+    # Define warehouse base data - HII Shipbuilding Facilities
     warehouse_data = [
         {
-            'id': 'lyon',
-            'name': 'Lyon Warehouse',
-            'location': 'Lyon, France',
-            'lat': 45.764,
-            'lng': 4.8357,
-            'capacity': 85000,
-            'manager': 'Marie Dubois',
-            'phone': '+33 4 72 XX XX XX'
+            'id': 'newport-news',
+            'name': 'Newport News Shipyard',
+            'location': 'Newport News, VA',
+            'lat': 36.9788,
+            'lng': -76.4280,
+            'capacity': 125000,
+            'manager': 'James Morrison',
+            'phone': '+1 757 380-XXXX'
         },
         {
-            'id': 'hamburg',
-            'name': 'Hamburg Warehouse',
-            'location': 'Hamburg, Germany',
-            'lat': 53.5511,
-            'lng': 9.9937,
-            'capacity': 92000,
-            'manager': 'Klaus Schmidt',
-            'phone': '+49 40 XXXX XXXX'
+            'id': 'pascagoula',
+            'name': 'Ingalls Shipbuilding',
+            'location': 'Pascagoula, MS',
+            'lat': 30.3658,
+            'lng': -88.5561,
+            'capacity': 98000,
+            'manager': 'Sarah Williams',
+            'phone': '+1 228 935-XXXX'
         },
         {
-            'id': 'milan',
-            'name': 'Milan Warehouse',
-            'location': 'Milan, Italy',
-            'lat': 45.4642,
-            'lng': 9.19,
-            'capacity': 75000,
-            'manager': 'Giuseppe Rossi',
-            'phone': '+39 02 XXXX XXXX'
+            'id': 'hampton',
+            'name': 'Hampton Roads Supply Depot',
+            'location': 'Hampton, VA',
+            'lat': 37.0299,
+            'lng': -76.3452,
+            'capacity': 65000,
+            'manager': 'Robert Chen',
+            'phone': '+1 757 722-XXXX'
         }
     ]
 
@@ -348,8 +348,8 @@ def get_warehouse_details() -> List[WarehouseDetail]:
                     stock_level = cursor.fetchone()[0] or 0
 
                     # Determine status based on various factors
-                    if wh['id'] == 'milan':
-                        status = 'maintenance'  # Milan is under maintenance
+                    if wh['id'] == 'hampton':
+                        status = 'maintenance'  # Hampton is under maintenance
                     elif stock_level / wh['capacity'] > 0.95:
                         status = 'critical'  # Near capacity
                     else:
@@ -380,7 +380,7 @@ def get_warehouse_details() -> List[WarehouseDetail]:
     except Exception as e:
         # Default data if query fails
         for wh in warehouse_data:
-            status = 'maintenance' if wh['id'] == 'milan' else 'operational'
+            status = 'maintenance' if wh['id'] == 'hampton' else 'operational'
             stock_level = wh['capacity'] * 0.8  # Default to 80% capacity
 
             warehouses.append(WarehouseDetail(

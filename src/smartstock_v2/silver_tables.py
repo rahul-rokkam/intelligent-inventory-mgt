@@ -41,14 +41,14 @@ df_bronze_marc = spark.read.table(f"{catalog}.{schema}.bronze_marc")
 # COMMAND ----------
 
 category_mapping = {
-    'MOT': 'Motors',
-    'BAT': 'Batteries',
-    'FRM': 'Frames',
-    'WHL': 'Wheels',
-    'BRK': 'Brakes',
-    'ELE': 'Electronics',
-    'DRV': 'Drivetrain',
-    'ACC': 'Accessories'
+    'HUL': 'Hull Materials',
+    'PIP': 'Piping & Valves',
+    'ELE': 'Electrical Systems',
+    'MEC': 'Mechanical Components',
+    'COA': 'Coatings & Paints',
+    'FST': 'Fasteners & Hardware',
+    'HVC': 'HVAC Systems',
+    'AUX': 'Auxiliary Equipment'
 }
 
 # Unit of measure mapping
@@ -102,7 +102,7 @@ df_silver_products = df_products_joined.withColumn(
     F.col("MATNR").alias("material_number"),
     F.col("MAKTX").alias("product_name"),
     F.col("MAKTX").alias("product_description"),  # In reality, would come from long text
-    F.concat(F.lit("VT-"), F.col("MATKL"), F.lit("-"), 
+    F.concat(F.lit("HII-"), F.col("MATKL"), F.lit("-"), 
              F.substring(F.col("MATNR"), -5, 5)).alias("sku"),
     F.round(F.coalesce(F.col("avg_standard_price"), F.lit(0.0)), 2).alias("price"),
     category_map_expr[F.col("MEINS")].alias("unit_of_measure"),
@@ -206,18 +206,18 @@ df_silver_product_plants.write \
 
 # COMMAND ----------
 
-# Timezone mapping
+# Timezone mapping - HII Facilities
 timezone_mapping = {
-    'FR01': 'Europe/Paris',
-    'DE01': 'Europe/Berlin',
-    'IT01': 'Europe/Rome'
+    'VA01': 'America/New_York',
+    'MS01': 'America/Chicago',
+    'VA02': 'America/New_York'
 }
 
-# Manager mapping
+# Manager mapping - HII Facilities
 manager_mapping = {
-    'FR01': 101,
-    'DE01': 102,
-    'IT01': 103
+    'VA01': 101,
+    'MS01': 102,
+    'VA02': 103
 }
 
 timezone_map_expr = F.create_map([F.lit(x) for x in chain.from_iterable(timezone_mapping.items())])

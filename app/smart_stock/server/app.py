@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
   title='SmartStock API',
-  description='Intelligent inventory management system for VulcanTech Manufacturing',
+  description='Intelligent inventory management system for Huntington Ingalls Industries (HII)',
   version='1.0.0',
   lifespan=lifespan,
 )
