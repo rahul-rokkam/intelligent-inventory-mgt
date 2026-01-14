@@ -10,9 +10,9 @@ import uuid
 
 # COMMAND ----------
 
-dbutils.widgets.text("catalog", "demo_nnguyen")
+dbutils.widgets.text("catalog", "huntington_ingalls_industries_catalog")
 catalog = dbutils.widgets.get("catalog")
-dbutils.widgets.text("schema", "smartstock")
+dbutils.widgets.text("schema", "smart_stock")
 schema = dbutils.widgets.get("schema")
 dbutils.widgets.text("env", "dev")
 env = dbutils.widgets.get("env")

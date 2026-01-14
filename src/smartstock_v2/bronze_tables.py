@@ -1,9 +1,11 @@
 # Databricks notebook source
 # At the top of each notebook
-dbutils.widgets.text("catalog", "demo_nnguyen")
+dbutils.widgets.text("catalog", "huntington_ingalls_industries_catalog")
+dbutils.widgets.text("schema", "smart_stock")
 dbutils.widgets.text("env", "dev")
 
 catalog = dbutils.widgets.get("catalog")
+schema = dbutils.widgets.get("schema")
 env = dbutils.widgets.get("env")
 
 # COMMAND ----------
@@ -29,7 +31,7 @@ random.seed(42)
 # COMMAND ----------
 
 spark.sql(f"USE CATALOG {catalog}")
-spark.sql("USE SCHEMA smartstock")
+spark.sql(f"USE SCHEMA {schema}")
 
 # COMMAND ----------
 
@@ -755,7 +757,7 @@ display(df_mara)
 # COMMAND ----------
 
 spark_df_mara = spark.createDataFrame(df_mara)
-spark_df_mara.write.mode('overwrite').saveAsTable('bronze_mara')
+spark_df_mara.write.mode('overwrite').saveAsTable(f"{catalog}.{schema}.bronze_mara")
 
 
 # COMMAND ----------
@@ -772,7 +774,7 @@ display(df_marc)
 # COMMAND ----------
 
 spark_df_marc = spark.createDataFrame(df_marc)
-spark_df_marc.write.mode('overwrite').saveAsTable('bronze_marc')
+spark_df_marc.write.mode('overwrite').saveAsTable(f"{catalog}.{schema}.bronze_marc")
 
 # COMMAND ----------
 
@@ -782,7 +784,7 @@ display(df_mbew)
 # COMMAND ----------
 
 spark_df_mbew = spark.createDataFrame(df_mbew)
-spark_df_mbew.write.mode("overwrite").saveAsTable("bronze_mbew")
+spark_df_mbew.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.bronze_mbew")
 
 # COMMAND ----------
 
@@ -792,7 +794,7 @@ display(df_t001w)
 # COMMAND ----------
 
 spark_df_t001w = spark.createDataFrame(df_t001w)
-spark_df_t001w.write.mode("overwrite").saveAsTable("bronze_t001w")
+spark_df_t001w.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.bronze_t001w")
 
 # COMMAND ----------
 
@@ -803,11 +805,11 @@ display(df_mseg)
 # COMMAND ----------
 
 spark_df_mkpf = spark.createDataFrame(df_mkpf)
-spark_df_mkpf.write.mode("overwrite").saveAsTable("bronze_mkpf")
+spark_df_mkpf.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.bronze_mkpf")
 
 
 spark_df_mseg = spark.createDataFrame(df_mseg)
-spark_df_mseg.write.mode("overwrite").saveAsTable("bronze_mseg") 
+spark_df_mseg.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.bronze_mseg") 
 
 # COMMAND ----------
 

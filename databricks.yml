@@ -25,6 +25,8 @@ sync:
 variables:
   catalog_name:
     description: The catalog name to use for the Smart Stock application.
+  schema_name:
+    description: The schema name to use for the Smart Stock application.
   lakebase_instance_name:
     description: The name of the Lakebase instance to use for the Smart Stock application.
   dim_product_pipeline_id:
@@ -43,7 +45,8 @@ targets:
     mode: development
     default: true
     variables:
-      catalog_name: smart_stock
+      catalog_name: huntington_ingalls_industries_catalog
+      schema_name: smart_stock
       lakebase_instance_name: smart-stock-db
       dim_product_pipeline_id: 8dd276d7-ddaf-48c1-905f-cd06ee3513e0
       dim_warehouse_pipeline_id: 0835f41e-4248-474c-802c-a8b892643d61
@@ -52,7 +55,7 @@ targets:
       inventory_forecast_pipeline_id: e69fb378-312a-4ec1-9765-03c6222c222d
     workspace:
       host: https://fevm-huntington-ingalls-industries.cloud.databricks.com/
-      profile: dev
+      profile:
 
   prod:
     mode: production
@@ -60,6 +63,7 @@ targets:
       user_name: nam.nguyen@databricks.com
     variables:
       catalog_name: manufacturing
+      schema_name: smart_stock
       lakebase_instance_name: smartstock
       dim_product_pipeline_id: 8586a3e0-e4f6-43bb-a654-c60006553fc9
       dim_warehouse_pipeline_id: cda5085e-9986-4300-803b-b6910e663be9

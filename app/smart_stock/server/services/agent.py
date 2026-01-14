@@ -155,7 +155,7 @@ class InventoryTools:
     def __init__(self, db_connection):
         """Initialize with database connection."""
         self.db = db_connection
-        self.schema = os.getenv("DB_SCHEMA", "smartstock_synced")
+        self.schema = os.getenv("DB_SCHEMA", "smart_stock")
 
     def get_critical_inventory_alerts(self) -> str:
         """Get items that are at risk of stockout or need immediate attention."""

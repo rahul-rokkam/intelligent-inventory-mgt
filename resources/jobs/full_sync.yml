@@ -20,6 +20,7 @@ resources:
             notebook_path: "../../src/smartstock_v2/Model training.py"
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
 
         - task_key: model_inference
@@ -29,6 +30,7 @@ resources:
             notebook_path: "../../src/smartstock_v2/Model Inference and Recommendations.py"
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
 
         - task_key: tables_sync_1st_pass
@@ -38,6 +40,7 @@ resources:
             notebook_path: "../../src/smartstock_v2/Tables sync - 1st pass.py"
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
               dim_product_pipeline_id: ${var.dim_product_pipeline_id}
               dim_warehouse_pipeline_id: ${var.dim_warehouse_pipeline_id}
@@ -51,6 +54,7 @@ resources:
             notebook_path: "../../src/smartstock_v2/Tables sync - 2nd pass.py"
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
               inventory_forecast_pipeline_id: ${var.inventory_forecast_pipeline_id}
 
