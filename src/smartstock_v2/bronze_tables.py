@@ -1,9 +1,11 @@
 # Databricks notebook source
 # At the top of each notebook
-dbutils.widgets.text("catalog", "demo_nnguyen")
+dbutils.widgets.text("catalog", "huntington_ingalls_industries_catalog")
+dbutils.widgets.text("schema", "smart_stock")
 dbutils.widgets.text("env", "dev")
 
 catalog = dbutils.widgets.get("catalog")
+schema = dbutils.widgets.get("schema")
 env = dbutils.widgets.get("env")
 
 # COMMAND ----------
@@ -29,7 +31,7 @@ random.seed(42)
 # COMMAND ----------
 
 spark.sql(f"USE CATALOG {catalog}")
-spark.sql("USE SCHEMA smartstock")
+spark.sql(f"USE SCHEMA {schema}")
 
 # COMMAND ----------
 
@@ -43,7 +45,7 @@ class BronzeDataGenerator:
         
         # SAP-like system identifiers
         self.source_systems = {
-            'PRD': 'SAP_PRODUCTION_EU',
+            'PRD': 'SAP_PRODUCTION_HII',
             'QAS': 'SAP_QUALITY_ASSURANCE',
             'DEV': 'SAP_DEVELOPMENT'
         }
@@ -64,26 +66,26 @@ class BronzeDataGenerator:
             '711': {'type': 'adjustment', 'desc': 'Posting Change in Stock - Phys Inv', 'frequency': 0.00}
         }
         
-        # SAP Plants (WERKS)
+        # SAP Plants (WERKS) - HII Shipbuilding Facilities
         self.plants = {
-            'FR01': {'name': 'Lyon Main Warehouse', 'country': 'FR', 'city': 'Lyon'},
-            'DE01': {'name': 'Hamburg Distribution Center', 'country': 'DE', 'city': 'Hamburg'},
-            'IT01': {'name': 'Milan Assembly Hub', 'country': 'IT', 'city': 'Milan'}
+            'VA01': {'name': 'Newport News Shipyard', 'country': 'US', 'city': 'Newport News'},
+            'MS01': {'name': 'Ingalls Shipbuilding', 'country': 'US', 'city': 'Pascagoula'},
+            'VA02': {'name': 'Hampton Roads Supply Depot', 'country': 'US', 'city': 'Hampton'}
         }
         
         # Storage Locations (LGORT)
         self.storage_locations = ['0001'] # only one storage location for demo purposes
         
-        # Product categories mapping
+        # Product categories mapping - Frigate/Shipbuilding Materials
         self.product_categories = {
-            'MOTOR': {'matkl': 'MOT', 'mtart': 'HAWA', 'count': 4},
-            'BATTERY': {'matkl': 'BAT', 'mtart': 'HAWA', 'count': 5},
-            'FRAME': {'matkl': 'FRM', 'mtart': 'HALB', 'count': 4},
-            'WHEEL': {'matkl': 'WHL', 'mtart': 'HAWA', 'count': 5},
-            'BRAKE': {'matkl': 'BRK', 'mtart': 'HAWA', 'count': 4},
-            'ELECTRONIC': {'matkl': 'ELE', 'mtart': 'HAWA', 'count': 5},
-            'DRIVETRAIN': {'matkl': 'DRV', 'mtart': 'HAWA', 'count': 4},
-            'ACCESSORY': {'matkl': 'ACC', 'mtart': 'NORM', 'count': 10}
+            'HULL': {'matkl': 'HUL', 'mtart': 'HAWA', 'count': 5},
+            'PIPING': {'matkl': 'PIP', 'mtart': 'HAWA', 'count': 5},
+            'ELECTRICAL': {'matkl': 'ELE', 'mtart': 'HAWA', 'count': 5},
+            'MECHANICAL': {'matkl': 'MEC', 'mtart': 'HAWA', 'count': 5},
+            'COATING': {'matkl': 'COA', 'mtart': 'HAWA', 'count': 4},
+            'FASTENER': {'matkl': 'FST', 'mtart': 'NORM', 'count': 5},
+            'HVAC': {'matkl': 'HVC', 'mtart': 'HAWA', 'count': 4},
+            'AUXILIARY': {'matkl': 'AUX', 'mtart': 'NORM', 'count': 8}
         }
         
         self.materials = []
@@ -95,12 +97,12 @@ class BronzeDataGenerator:
     def initialize_inventory(self):
         """Initialize inventory levels after materials are generated."""
         for material in self.materials:
-            # Get reorder level from category mapping
+            # Get reorder level from category mapping - Shipbuilding materials
             category = material['category']
             base_reorder = {
-                'MOTOR': 15, 'BATTERY': 30, 'FRAME': 10,
-                'WHEEL': 25, 'BRAKE': 30, 'ELECTRONIC': 35,
-                'DRIVETRAIN': 30, 'ACCESSORY': 50
+                'HULL': 15, 'PIPING': 30, 'ELECTRICAL': 35,
+                'MECHANICAL': 25, 'COATING': 20, 'FASTENER': 50,
+                'HVAC': 20, 'AUXILIARY': 40
             }.get(category, 20)
 
             # Assign each material to a health tier based on hash
@@ -108,11 +110,11 @@ class BronzeDataGenerator:
             
             for plant_idx, plant in enumerate(self.plants.keys()):
                 # Warehouse capacity multipliers
-                if plant_idx == 0: # FR01 Lyon - high capacity
+                if plant_idx == 0: # VA01 Newport News - high capacity (main shipyard)
                     capacity_mult = random.uniform(1.2, 1.6)
-                elif plant_idx == 1: # DE01 Hamburg - medium
+                elif plant_idx == 1: # MS01 Ingalls - medium
                     capacity_mult = random.uniform(0.9, 1.3)
-                else:
+                else:  # VA02 Hampton Roads Supply Depot
                     capacity_mult = random.uniform(0.7, 1.1)
 
                 for lgort in self.storage_locations:
@@ -158,64 +160,64 @@ class BronzeDataGenerator:
         materials = []
         material_counter = 1
         
-        # Product definitions matching the gold layer
+        # Product definitions - Frigate/Shipbuilding Materials for HII
         product_definitions = [
-            # Motors
-            {'category': 'MOTOR', 'name': 'E-Motor 250W Mid-Drive', 'desc': 'Bosch Performance Line CX motor for mountain e-bikes', 'weight': 3.2},
-            {'category': 'MOTOR', 'name': 'E-Motor 500W Hub', 'desc': 'Rear hub motor for city e-bikes, 500W continuous power', 'weight': 4.5},
-            {'category': 'MOTOR', 'name': 'E-Motor 750W Performance', 'desc': 'High-performance mid-drive motor for cargo bikes', 'weight': 4.8},
-            {'category': 'MOTOR', 'name': 'Motor Controller Unit', 'desc': 'Smart controller with regenerative braking support', 'weight': 0.8},
+            # Hull Materials
+            {'category': 'HULL', 'name': 'Steel Plate HY-80 1in', 'desc': 'High-yield steel plate 1 inch thick for hull construction', 'weight': 245.0},
+            {'category': 'HULL', 'name': 'Steel Plate HY-80 0.5in', 'desc': 'High-yield steel plate 0.5 inch thick for superstructure', 'weight': 122.5},
+            {'category': 'HULL', 'name': 'Hull Stiffener T-Bar', 'desc': 'T-bar stiffener for hull longitudinal reinforcement', 'weight': 85.0},
+            {'category': 'HULL', 'name': 'Bulkhead Panel Assembly', 'desc': 'Pre-fabricated watertight bulkhead panel', 'weight': 450.0},
+            {'category': 'HULL', 'name': 'Keel Section Forging', 'desc': 'Forged keel section for frigate main structure', 'weight': 1200.0},
             
-            # Batteries
-            {'category': 'BATTERY', 'name': 'Battery 48V 14Ah', 'desc': 'Lithium-ion battery pack, 672Wh capacity', 'weight': 3.1},
-            {'category': 'BATTERY', 'name': 'Battery 36V 10Ah', 'desc': 'Compact battery for city bikes, 360Wh', 'weight': 2.3},
-            {'category': 'BATTERY', 'name': 'Battery 52V 20Ah', 'desc': 'Extended range battery, 1040Wh for cargo bikes', 'weight': 4.2},
-            {'category': 'BATTERY', 'name': 'Battery Management System', 'desc': 'BMS for battery protection and monitoring', 'weight': 0.2},
-            {'category': 'BATTERY', 'name': 'Battery Charger 4A', 'desc': 'Fast charger compatible with all battery models', 'weight': 1.2},
+            # Piping & Valves
+            {'category': 'PIPING', 'name': 'Seawater Pipe 6in CuNi', 'desc': 'Copper-nickel seawater piping 6 inch diameter', 'weight': 28.5},
+            {'category': 'PIPING', 'name': 'Fuel Line Pipe 4in SS', 'desc': 'Stainless steel fuel line piping 4 inch diameter', 'weight': 18.2},
+            {'category': 'PIPING', 'name': 'Gate Valve 6in Bronze', 'desc': 'Bronze gate valve for seawater systems', 'weight': 45.0},
+            {'category': 'PIPING', 'name': 'Check Valve 4in SS', 'desc': 'Stainless steel check valve for fuel systems', 'weight': 22.5},
+            {'category': 'PIPING', 'name': 'Pipe Flange Set 6in', 'desc': 'ANSI 150 flange set with gaskets and bolts', 'weight': 12.8},
             
-            # Frames
-            {'category': 'FRAME', 'name': 'Carbon Frame MTB', 'desc': 'Full suspension carbon frame for mountain e-bikes', 'weight': 2.8},
-            {'category': 'FRAME', 'name': 'Aluminum Frame City', 'desc': 'Step-through aluminum frame for urban bikes', 'weight': 3.2},
-            {'category': 'FRAME', 'name': 'Aluminum Frame Cargo', 'desc': 'Reinforced frame for cargo e-bikes', 'weight': 5.5},
-            {'category': 'FRAME', 'name': 'Steel Frame Classic', 'desc': 'Classic steel frame for vintage-style e-bikes', 'weight': 4.1},
+            # Electrical Systems
+            {'category': 'ELECTRICAL', 'name': 'Power Cable 4/0 AWG', 'desc': 'Marine-grade power cable 4/0 AWG per 100ft', 'weight': 85.0},
+            {'category': 'ELECTRICAL', 'name': 'Switchgear Panel 450V', 'desc': 'Main distribution switchgear panel 450V', 'weight': 680.0},
+            {'category': 'ELECTRICAL', 'name': 'Cable Harness Navigation', 'desc': 'Navigation systems cable harness assembly', 'weight': 12.5},
+            {'category': 'ELECTRICAL', 'name': 'Junction Box Watertight', 'desc': 'Watertight junction box for deck installations', 'weight': 8.2},
+            {'category': 'ELECTRICAL', 'name': 'Transformer 480V/120V', 'desc': 'Ship service transformer 50kVA', 'weight': 245.0},
             
-            # Wheels
-            {'category': 'WHEEL', 'name': 'Wheel Set 29" MTB', 'desc': 'Tubeless-ready wheelset for mountain bikes', 'weight': 2.1},
-            {'category': 'WHEEL', 'name': 'Wheel Set 28" City', 'desc': 'City bike wheels with puncture protection', 'weight': 2.3},
-            {'category': 'WHEEL', 'name': 'Wheel Set 20" Cargo', 'desc': 'Heavy-duty wheels for cargo bikes', 'weight': 3.2},
-            {'category': 'WHEEL', 'name': 'Tire 29x2.4 MTB', 'desc': 'All-terrain tire for mountain bikes', 'weight': 0.85},
-            {'category': 'WHEEL', 'name': 'Tire 28x1.75 City', 'desc': 'City tire with reflective sidewalls', 'weight': 0.65},
+            # Mechanical Components
+            {'category': 'MECHANICAL', 'name': 'Seawater Pump 500GPM', 'desc': 'Centrifugal seawater pump 500 GPM capacity', 'weight': 185.0},
+            {'category': 'MECHANICAL', 'name': 'Fuel Transfer Pump', 'desc': 'Positive displacement fuel transfer pump', 'weight': 125.0},
+            {'category': 'MECHANICAL', 'name': 'Heat Exchanger Shell', 'desc': 'Shell and tube heat exchanger for cooling systems', 'weight': 320.0},
+            {'category': 'MECHANICAL', 'name': 'Reduction Gearbox', 'desc': 'Main propulsion reduction gearbox assembly', 'weight': 2800.0},
+            {'category': 'MECHANICAL', 'name': 'Shaft Seal Assembly', 'desc': 'Propeller shaft seal and bearing assembly', 'weight': 145.0},
             
-            # Brakes
-            {'category': 'BRAKE', 'name': 'Hydraulic Disc Brake Set', 'desc': 'Shimano 4-piston hydraulic disc brakes', 'weight': 0.95},
-            {'category': 'BRAKE', 'name': 'Mechanical Disc Brake Set', 'desc': 'Cable-actuated disc brakes for city bikes', 'weight': 0.75},
-            {'category': 'BRAKE', 'name': 'Brake Rotor 180mm', 'desc': 'Stainless steel brake rotor', 'weight': 0.15},
-            {'category': 'BRAKE', 'name': 'Brake Pads Set', 'desc': 'High-performance brake pads', 'weight': 0.08},
+            # Coatings & Paints
+            {'category': 'COATING', 'name': 'Anti-Fouling Paint 5gal', 'desc': 'Copper-based anti-fouling hull paint', 'weight': 28.5},
+            {'category': 'COATING', 'name': 'Epoxy Primer 5gal', 'desc': 'Two-part epoxy primer for steel surfaces', 'weight': 32.0},
+            {'category': 'COATING', 'name': 'Deck Non-Skid Coating', 'desc': 'Non-skid deck coating system per gallon', 'weight': 12.5},
+            {'category': 'COATING', 'name': 'Fire Retardant Paint', 'desc': 'Intumescent fire retardant coating 5gal', 'weight': 35.0},
             
-            # Electronics
-            {'category': 'ELECTRONIC', 'name': 'LCD Display 3.5"', 'desc': 'Color LCD display with GPS and connectivity', 'weight': 0.25},
-            {'category': 'ELECTRONIC', 'name': 'LED Display Basic', 'desc': 'Basic LED display showing speed and battery', 'weight': 0.15},
-            {'category': 'ELECTRONIC', 'name': 'Thumb Throttle', 'desc': 'Variable speed thumb throttle', 'weight': 0.05},
-            {'category': 'ELECTRONIC', 'name': 'Pedal Assist Sensor', 'desc': 'Cadence sensor for pedal assist', 'weight': 0.08},
-            {'category': 'ELECTRONIC', 'name': 'Torque Sensor', 'desc': 'Bottom bracket torque sensor', 'weight': 0.12},
+            # Fasteners & Hardware
+            {'category': 'FASTENER', 'name': 'Hex Bolt SS 1/2-13x2', 'desc': 'Stainless steel hex bolt 1/2-13 x 2in box/100', 'weight': 8.5},
+            {'category': 'FASTENER', 'name': 'Hex Nut SS 1/2-13', 'desc': 'Stainless steel hex nut 1/2-13 box/100', 'weight': 3.2},
+            {'category': 'FASTENER', 'name': 'Flat Washer SS 1/2', 'desc': 'Stainless steel flat washer 1/2in box/100', 'weight': 1.8},
+            {'category': 'FASTENER', 'name': 'Gasket Set Flange', 'desc': 'Assorted flange gasket set EPDM/Viton', 'weight': 2.5},
+            {'category': 'FASTENER', 'name': 'Rivet Set Marine', 'desc': 'Marine aluminum rivet set assorted sizes', 'weight': 4.2},
             
-            # Drivetrain
-            {'category': 'DRIVETRAIN', 'name': 'Derailleur 11-Speed', 'desc': 'Shimano XT 11-speed rear derailleur', 'weight': 0.28},
-            {'category': 'DRIVETRAIN', 'name': 'Chain 11-Speed', 'desc': 'E-bike specific reinforced chain', 'weight': 0.35},
-            {'category': 'DRIVETRAIN', 'name': 'Cassette 11-50T', 'desc': '11-speed cassette with wide range', 'weight': 0.45},
-            {'category': 'DRIVETRAIN', 'name': 'Crankset 170mm', 'desc': 'Forged aluminum crankset with chainring', 'weight': 0.95},
+            # HVAC Systems
+            {'category': 'HVAC', 'name': 'Air Handler Unit 10ton', 'desc': 'Ship air handling unit 10 ton cooling capacity', 'weight': 420.0},
+            {'category': 'HVAC', 'name': 'Ductwork Section 24in', 'desc': 'Galvanized steel ductwork 24in diameter 10ft', 'weight': 45.0},
+            {'category': 'HVAC', 'name': 'Chilled Water Coil', 'desc': 'Copper chilled water coil for AHU', 'weight': 85.0},
+            {'category': 'HVAC', 'name': 'Ventilation Fan Axial', 'desc': 'Axial ventilation fan 5000 CFM capacity', 'weight': 125.0},
             
-            # Accessories
-            {'category': 'ACCESSORY', 'name': 'Handlebar Aluminum', 'desc': 'Wide aluminum handlebar 720mm', 'weight': 0.35},
-            {'category': 'ACCESSORY', 'name': 'Seatpost 31.6mm', 'desc': 'Aluminum seatpost with quick release', 'weight': 0.42},
-            {'category': 'ACCESSORY', 'name': 'Saddle Comfort Plus', 'desc': 'Ergonomic saddle with gel padding', 'weight': 0.48},
-            {'category': 'ACCESSORY', 'name': 'Pedals Platform', 'desc': 'Wide platform pedals with pins', 'weight': 0.38},
-            {'category': 'ACCESSORY', 'name': 'Grips Ergonomic', 'desc': 'Lock-on ergonomic grips', 'weight': 0.12},
-            {'category': 'ACCESSORY', 'name': 'LED Light Set', 'desc': 'Front and rear LED lights with USB charging', 'weight': 0.22},
-            {'category': 'ACCESSORY', 'name': 'Kickstand Heavy Duty', 'desc': 'Adjustable center kickstand', 'weight': 0.55},
-            {'category': 'ACCESSORY', 'name': 'Cable Set Complete', 'desc': 'Brake and shift cables kit', 'weight': 0.18},
-            {'category': 'ACCESSORY', 'name': 'Bolt Kit Frame', 'desc': 'Complete bolt kit for frame assembly', 'weight': 0.25},
-            {'category': 'ACCESSORY', 'name': 'Wire Harness Main', 'desc': 'Main electrical wiring harness', 'weight': 0.32}
+            # Auxiliary Equipment
+            {'category': 'AUXILIARY', 'name': 'Anchor Chain 2.5in', 'desc': 'Studlink anchor chain 2.5 inch per shot', 'weight': 2400.0},
+            {'category': 'AUXILIARY', 'name': 'Mooring Line 8in Nylon', 'desc': 'Double-braided nylon mooring line 8in x 600ft', 'weight': 185.0},
+            {'category': 'AUXILIARY', 'name': 'Life Raft 25-Person', 'desc': 'SOLAS-approved 25-person life raft', 'weight': 145.0},
+            {'category': 'AUXILIARY', 'name': 'Fire Hose Assembly', 'desc': 'Fire hose 2.5in x 50ft with nozzle', 'weight': 18.5},
+            {'category': 'AUXILIARY', 'name': 'Davit Crane 2-Ton', 'desc': 'Boat davit crane 2-ton capacity', 'weight': 850.0},
+            {'category': 'AUXILIARY', 'name': 'Navigation Light Set', 'desc': 'LED navigation light set port/starboard/stern', 'weight': 12.5},
+            {'category': 'AUXILIARY', 'name': 'Watertight Door Assembly', 'desc': 'Quick-acting watertight door with frame', 'weight': 285.0},
+            {'category': 'AUXILIARY', 'name': 'Insulation Blanket Marine', 'desc': 'Mineral wool insulation blanket per roll', 'weight': 22.5}
         ]
         
         base_date = datetime(2021, 12, 1, 9, 0, 0)
@@ -270,12 +272,12 @@ class BronzeDataGenerator:
                 # Not all materials in all plants (80% coverage)
                 if random.random() < 0.8:
                     
-                    # Reorder levels based on category
+                    # Reorder levels based on category - Shipbuilding materials
                     category = material['category']
                     base_reorder = {
-                        'MOTOR': 15, 'BATTERY': 30, 'FRAME': 10,
-                        'WHEEL': 25, 'BRAKE': 30, 'ELECTRONIC': 35,
-                        'DRIVETRAIN': 30, 'ACCESSORY': 50
+                        'HULL': 15, 'PIPING': 30, 'ELECTRICAL': 35,
+                        'MECHANICAL': 25, 'COATING': 20, 'FASTENER': 50,
+                        'HVAC': 20, 'AUXILIARY': 40
                     }.get(category, 20)
                     
                     reorder_point = base_reorder * random.uniform(0.8, 1.2)
@@ -303,49 +305,57 @@ class BronzeDataGenerator:
         """Generate SAP MBEW table (Material Valuation)."""
         valuation_data = []
         
-        # Price mapping from gold layer
+        # Price mapping - Shipbuilding materials for HII
         price_mapping = {
-            'E-Motor 250W Mid-Drive': 450.00,
-            'E-Motor 500W Hub': 380.00,
-            'E-Motor 750W Performance': 680.00,
-            'Motor Controller Unit': 125.00,
-            'Battery 48V 14Ah': 420.00,
-            'Battery 36V 10Ah': 280.00,
-            'Battery 52V 20Ah': 650.00,
-            'Battery Management System': 45.00,
-            'Battery Charger 4A': 85.00,
-            'Carbon Frame MTB': 1200.00,
-            'Aluminum Frame City': 380.00,
-            'Aluminum Frame Cargo': 520.00,
-            'Steel Frame Classic': 320.00,
-            'Wheel Set 29" MTB': 320.00,
-            'Wheel Set 28" City': 180.00,
-            'Wheel Set 20" Cargo': 240.00,
-            'Tire 29x2.4 MTB': 55.00,
-            'Tire 28x1.75 City': 32.00,
-            'Hydraulic Disc Brake Set': 220.00,
-            'Mechanical Disc Brake Set': 85.00,
-            'Brake Rotor 180mm': 28.00,
-            'Brake Pads Set': 18.00,
-            'LCD Display 3.5"': 145.00,
-            'LED Display Basic': 45.00,
-            'Thumb Throttle': 22.00,
-            'Pedal Assist Sensor': 35.00,
-            'Torque Sensor': 125.00,
-            'Derailleur 11-Speed': 185.00,
-            'Chain 11-Speed': 42.00,
-            'Cassette 11-50T': 125.00,
-            'Crankset 170mm': 95.00,
-            'Handlebar Aluminum': 45.00,
-            'Seatpost 31.6mm': 28.00,
-            'Saddle Comfort Plus': 52.00,
-            'Pedals Platform': 35.00,
-            'Grips Ergonomic': 18.00,
-            'LED Light Set': 48.00,
-            'Kickstand Heavy Duty': 22.00,
-            'Cable Set Complete': 15.00,
-            'Bolt Kit Frame': 8.50,
-            'Wire Harness Main': 38.00
+            # Hull Materials
+            'Steel Plate HY-80 1in': 2850.00,
+            'Steel Plate HY-80 0.5in': 1425.00,
+            'Hull Stiffener T-Bar': 680.00,
+            'Bulkhead Panel Assembly': 12500.00,
+            'Keel Section Forging': 45000.00,
+            # Piping & Valves
+            'Seawater Pipe 6in CuNi': 485.00,
+            'Fuel Line Pipe 4in SS': 320.00,
+            'Gate Valve 6in Bronze': 1850.00,
+            'Check Valve 4in SS': 920.00,
+            'Pipe Flange Set 6in': 185.00,
+            # Electrical Systems
+            'Power Cable 4/0 AWG': 1250.00,
+            'Switchgear Panel 450V': 28500.00,
+            'Cable Harness Navigation': 3200.00,
+            'Junction Box Watertight': 485.00,
+            'Transformer 480V/120V': 8500.00,
+            # Mechanical Components
+            'Seawater Pump 500GPM': 12500.00,
+            'Fuel Transfer Pump': 8200.00,
+            'Heat Exchanger Shell': 18500.00,
+            'Reduction Gearbox': 185000.00,
+            'Shaft Seal Assembly': 6500.00,
+            # Coatings & Paints
+            'Anti-Fouling Paint 5gal': 285.00,
+            'Epoxy Primer 5gal': 165.00,
+            'Deck Non-Skid Coating': 125.00,
+            'Fire Retardant Paint': 385.00,
+            # Fasteners & Hardware
+            'Hex Bolt SS 1/2-13x2': 85.00,
+            'Hex Nut SS 1/2-13': 42.00,
+            'Flat Washer SS 1/2': 28.00,
+            'Gasket Set Flange': 145.00,
+            'Rivet Set Marine': 68.00,
+            # HVAC Systems
+            'Air Handler Unit 10ton': 24500.00,
+            'Ductwork Section 24in': 320.00,
+            'Chilled Water Coil': 2850.00,
+            'Ventilation Fan Axial': 4200.00,
+            # Auxiliary Equipment
+            'Anchor Chain 2.5in': 18500.00,
+            'Mooring Line 8in Nylon': 2850.00,
+            'Life Raft 25-Person': 8500.00,
+            'Fire Hose Assembly': 485.00,
+            'Davit Crane 2-Ton': 45000.00,
+            'Navigation Light Set': 1850.00,
+            'Watertight Door Assembly': 12500.00,
+            'Insulation Blanket Marine': 185.00
         }
         
         for material in self.materials:
@@ -382,32 +392,32 @@ class BronzeDataGenerator:
         plant_data = []
         
         plant_details = {
-            'FR01': {
-                'NAME1': 'Lyon Main Warehouse',
-                'NAME2': 'VulcanTech France',
-                'STRAS': 'Zone Industrielle Rue de la Production',
-                'PSTLZ': '69007',
-                'ORT01': 'Lyon',
-                'LAND1': 'FR',
-                'REGIO': '84'  # Auvergne-Rhône-Alpes
+            'VA01': {
+                'NAME1': 'Newport News Shipyard',
+                'NAME2': 'Huntington Ingalls Industries',
+                'STRAS': '4101 Washington Avenue',
+                'PSTLZ': '23607',
+                'ORT01': 'Newport News',
+                'LAND1': 'US',
+                'REGIO': 'VA'  # Virginia
             },
-            'DE01': {
-                'NAME1': 'Hamburg Distribution Center',
-                'NAME2': 'VulcanTech Deutschland',
-                'STRAS': 'Hafencity Speicherstrasse 12',
-                'PSTLZ': '20457',
-                'ORT01': 'Hamburg',
-                'LAND1': 'DE',
-                'REGIO': '02'  # Hamburg
+            'MS01': {
+                'NAME1': 'Ingalls Shipbuilding',
+                'NAME2': 'Huntington Ingalls Industries',
+                'STRAS': '1000 Jerry St. Pe Blvd',
+                'PSTLZ': '39568',
+                'ORT01': 'Pascagoula',
+                'LAND1': 'US',
+                'REGIO': 'MS'  # Mississippi
             },
-            'IT01': {
-                'NAME1': 'Milan Assembly Hub',
-                'NAME2': 'VulcanTech Italia',
-                'STRAS': 'Via Industriale 45',
-                'PSTLZ': '20090',
-                'ORT01': 'Segrate MI',
-                'LAND1': 'IT',
-                'REGIO': '03'  # Lombardia
+            'VA02': {
+                'NAME1': 'Hampton Roads Supply Depot',
+                'NAME2': 'Huntington Ingalls Industries',
+                'STRAS': '2400 Industry Drive',
+                'PSTLZ': '23666',
+                'ORT01': 'Hampton',
+                'LAND1': 'US',
+                'REGIO': 'VA'  # Virginia
             }
         }
         
@@ -426,9 +436,9 @@ class BronzeDataGenerator:
         for material in self.materials:
             category = material['category']
             reorder_level = {
-                'MOTOR': 15, 'BATTERY': 30, 'FRAME': 10,
-                'WHEEL': 25, 'BRAKE': 30, 'ELECTRONIC': 35,
-                'DRIVETRAIN': 30, 'ACCESSORY': 50
+                'HULL': 15, 'PIPING': 30, 'ELECTRICAL': 35,
+                'MECHANICAL': 25, 'COATING': 20, 'FASTENER': 50,
+                'HVAC': 20, 'AUXILIARY': 40
             }.get(category, 20)
 
 
@@ -747,7 +757,7 @@ display(df_mara)
 # COMMAND ----------
 
 spark_df_mara = spark.createDataFrame(df_mara)
-spark_df_mara.write.mode('overwrite').saveAsTable('bronze_mara')
+spark_df_mara.write.mode('overwrite').saveAsTable(f"{catalog}.{schema}.bronze_mara")
 
 
 # COMMAND ----------
@@ -764,7 +774,7 @@ display(df_marc)
 # COMMAND ----------
 
 spark_df_marc = spark.createDataFrame(df_marc)
-spark_df_marc.write.mode('overwrite').saveAsTable('bronze_marc')
+spark_df_marc.write.mode('overwrite').saveAsTable(f"{catalog}.{schema}.bronze_marc")
 
 # COMMAND ----------
 
@@ -774,7 +784,7 @@ display(df_mbew)
 # COMMAND ----------
 
 spark_df_mbew = spark.createDataFrame(df_mbew)
-spark_df_mbew.write.mode("overwrite").saveAsTable("bronze_mbew")
+spark_df_mbew.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.bronze_mbew")
 
 # COMMAND ----------
 
@@ -784,7 +794,7 @@ display(df_t001w)
 # COMMAND ----------
 
 spark_df_t001w = spark.createDataFrame(df_t001w)
-spark_df_t001w.write.mode("overwrite").saveAsTable("bronze_t001w")
+spark_df_t001w.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.bronze_t001w")
 
 # COMMAND ----------
 
@@ -795,11 +805,11 @@ display(df_mseg)
 # COMMAND ----------
 
 spark_df_mkpf = spark.createDataFrame(df_mkpf)
-spark_df_mkpf.write.mode("overwrite").saveAsTable("bronze_mkpf")
+spark_df_mkpf.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.bronze_mkpf")
 
 
 spark_df_mseg = spark.createDataFrame(df_mseg)
-spark_df_mseg.write.mode("overwrite").saveAsTable("bronze_mseg") 
+spark_df_mseg.write.mode("overwrite").saveAsTable(f"{catalog}.{schema}.bronze_mseg") 
 
 # COMMAND ----------
 

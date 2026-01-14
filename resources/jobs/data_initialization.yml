@@ -14,6 +14,7 @@ resources:
             notebook_path: ../../src/smartstock_v2/bronze_tables.py
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
 
         - task_key: silver_tables
@@ -23,6 +24,7 @@ resources:
             notebook_path: ../../src/smartstock_v2/silver_tables.py
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
 
         - task_key: gold_tables
@@ -32,6 +34,7 @@ resources:
             notebook_path: ../../src/smartstock_v2/gold_tables.py
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
 
         - task_key: sales_history
@@ -41,6 +44,7 @@ resources:
             notebook_path: ../../src/smartstock_v2/sales_history.py
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
 
       queue:

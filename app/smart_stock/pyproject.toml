@@ -1,7 +1,7 @@
 [project]
 name = "smartstock"
 version = "1.0.0"
-description = "SmartStock - Intelligent inventory management for VulcanTech Manufacturing"
+description = "SmartStock - Intelligent inventory management for Huntington Ingalls Industries (HII)"
 authors = [
     {name = "Your Name", email = "your.email@databricks.com"},
 ]

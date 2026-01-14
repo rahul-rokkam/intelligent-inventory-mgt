@@ -8,22 +8,6 @@ resources:
         - group_name: users
           level: CAN_MANAGE_RUN
 
-      job_clusters:
-        - job_cluster_key: ml_cluster
-          new_cluster:
-            spark_version: 16.4.x-cpu-ml-scala2.12  # ML runtime version
-            node_type_id: rd-fleet.xlarge
-            num_workers: 8
-            aws_attributes:
-              first_on_demand: 1
-              availability: SPOT_WITH_FALLBACK
-              zone_id: us-east-1a
-              spot_bid_price_percent: 100
-            spark_env_vars:
-              PYSPARK_PYTHON: /databricks/python3/bin/python3
-            runtime_engine: PHOTON
-            enable_elastic_disk: false
-
       tasks:
         - task_key: data_generation
           run_job_task:
@@ -32,21 +16,21 @@ resources:
         - task_key: model_training
           depends_on:
             - task_key: data_generation
-          job_cluster_key: ml_cluster
           notebook_task:
             notebook_path: "../../src/smartstock_v2/Model training.py"
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
 
         - task_key: model_inference
           depends_on:
             - task_key: model_training
-          job_cluster_key: ml_cluster
           notebook_task:
             notebook_path: "../../src/smartstock_v2/Model Inference and Recommendations.py"
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
 
         - task_key: tables_sync_1st_pass
@@ -56,6 +40,7 @@ resources:
             notebook_path: "../../src/smartstock_v2/Tables sync - 1st pass.py"
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
               dim_product_pipeline_id: ${var.dim_product_pipeline_id}
               dim_warehouse_pipeline_id: ${var.dim_warehouse_pipeline_id}
@@ -69,6 +54,7 @@ resources:
             notebook_path: "../../src/smartstock_v2/Tables sync - 2nd pass.py"
             base_parameters:
               catalog: ${var.catalog_name}
+              schema: ${var.schema_name}
               env: ${bundle.target}
               inventory_forecast_pipeline_id: ${var.inventory_forecast_pipeline_id}
 

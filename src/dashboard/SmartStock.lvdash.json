@@ -62,8 +62,8 @@
         "    \n",
         "FROM simple_metrics;"
       ],
-      "catalog": "demo_nnguyen",
-      "schema": "smartstock"
+      "catalog": "huntington_ingalls_industries_catalog",
+      "schema": "smart_stock"
     },
     {
       "name": "a4c6b30f",
@@ -103,8 +103,8 @@
         "FROM consumption_data c\n",
         "JOIN avg_inventory ai ON c.product_id = ai.product_id;"
       ],
-      "catalog": "demo_nnguyen",
-      "schema": "smartstock"
+      "catalog": "huntington_ingalls_industries_catalog",
+      "schema": "smart_stock"
     },
     {
       "name": "567a4ae4",
@@ -182,8 +182,8 @@
           }
         }
       ],
-      "catalog": "demo_nnguyen",
-      "schema": "smartstock"
+      "catalog": "huntington_ingalls_industries_catalog",
+      "schema": "smart_stock"
     },
     {
       "name": "c62999f4",
@@ -191,8 +191,8 @@
       "queryLines": [
         "SELECT DISTINCT name AS product_name FROM dim_products"
       ],
-      "catalog": "demo_nnguyen",
-      "schema": "smartstock"
+      "catalog": "huntington_ingalls_industries_catalog",
+      "schema": "smart_stock"
     },
     {
       "name": "32f3f09e",
@@ -200,8 +200,8 @@
       "queryLines": [
         "SELECT DISTINCT name AS warehouse_name FROM dim_warehouses"
       ],
-      "catalog": "demo_nnguyen",
-      "schema": "smartstock"
+      "catalog": "huntington_ingalls_industries_catalog",
+      "schema": "smart_stock"
     },
     {
       "name": "0e1fb77c",
@@ -263,8 +263,8 @@
           }
         }
       ],
-      "catalog": "demo_nnguyen",
-      "schema": "smartstock"
+      "catalog": "huntington_ingalls_industries_catalog",
+      "schema": "smart_stock"
     },
     {
       "name": "9f499c5c",
@@ -325,8 +325,8 @@
           }
         }
       ],
-      "catalog": "demo_nnguyen",
-      "schema": "smartstock"
+      "catalog": "huntington_ingalls_industries_catalog",
+      "schema": "smart_stock"
     },
     {
       "name": "d1fb2f04",
@@ -374,8 +374,8 @@
           }
         }
       ],
-      "catalog": "demo_nnguyen",
-      "schema": "smartstock"
+      "catalog": "huntington_ingalls_industries_catalog",
+      "schema": "smart_stock"
     }
   ],
   "pages": [
